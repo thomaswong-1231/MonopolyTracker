@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PropertyTransferModal } from "@/components/PropertyTransferModal";
 import { TransactionModal } from "@/components/TransactionModal";
@@ -20,13 +20,6 @@ export default function DashboardPage() {
     toPlayerId?: string;
     bankPaymentReason?: "tax" | "property";
   }>({});
-
-  const playersByWorth = useMemo(() => {
-    if (!session) return [];
-    return [...session.players].sort(
-      (first, second) => calculateNetWorth(session, second.id) - calculateNetWorth(session, first.id)
-    );
-  }, [session]);
 
   if (!session) {
     return (
@@ -49,7 +42,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid dashboard-player-list">
-        {playersByWorth.map((player, index) => {
+        {session.players.map((player, index) => {
           const netWorth = calculateNetWorth(session, player.id);
           const ownedProperties = MONOPOLY_PROPERTIES.filter(
             (property) => session.properties[property.id]?.ownerId === player.id
