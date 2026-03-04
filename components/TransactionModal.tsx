@@ -34,17 +34,17 @@ interface TransactionModalProps {
 }
 
 export function TransactionModal({ open, onClose, players, properties, onSave, initial }: TransactionModalProps) {
-  const colorDotByGroup: Record<string, string> = {
-    Brown: "🟤",
-    "Light Blue": "🔹",
-    Pink: "🩷",
-    Orange: "🟠",
-    Red: "🔴",
-    Yellow: "🟡",
-    Green: "🟢",
-    "Dark Blue": "🔵",
-    Railroad: "⚫",
-    Utility: "⚪"
+  const colorByGroup: Record<string, string> = {
+    Brown: "#8b5a2b",
+    "Light Blue": "#7ec8f5",
+    Pink: "#ec4899",
+    Orange: "#f97316",
+    Red: "#ef4444",
+    Yellow: "#eab308",
+    Green: "#16a34a",
+    "Dark Blue": "#1d4ed8",
+    Railroad: "#111827",
+    Utility: "#9ca3af"
   };
 
   const [type, setType] = useState<TransactionType>(initial?.type ?? "player_to_bank");
@@ -59,6 +59,7 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
   const [error, setError] = useState("");
 
   const selectedProperty = properties.find((property) => property.id === propertyId);
+  const availableProperties = properties.filter((property) => property.ownerId === null);
   const parsedAmount = amount === "" ? NaN : Number(amount);
   const effectiveAmount = parsedAmount;
   const fromPlayer = players.find((player) => player.id === fromPlayerId);
@@ -207,19 +208,31 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
           )}
 
           {type === "player_to_bank" && bankPaymentReason === "property" && (
-            <label>
-              Property
-              <select value={propertyId} onChange={(event) => setPropertyId(event.target.value)}>
-                <option value="">Select property</option>
-                {properties
-                  .filter((property) => property.ownerId === null)
-                  .map((property) => (
-                    <option key={property.id} value={property.id}>
-                      {colorDotByGroup[property.colorGroup] ?? "⚪"} {property.colorGroup} · {property.name} (${property.purchasePrice})
-                    </option>
+            <div className="stack">
+              <p className="muted tiny">Property</p>
+              {availableProperties.length === 0 ? (
+                <p className="muted tiny">No unowned properties available.</p>
+              ) : (
+                <div className="property-checkbox-list">
+                  {availableProperties.map((property) => (
+                    <label key={property.id} className="property-checkbox-item">
+                      <input
+                        type="radio"
+                        name="transaction-property"
+                        checked={propertyId === property.id}
+                        onChange={() => setPropertyId(property.id)}
+                      />
+                      <span
+                        className="property-swatch"
+                        style={{ backgroundColor: colorByGroup[property.colorGroup] ?? "#94a3b8" }}
+                        aria-hidden
+                      />
+                      <span>{property.name} ({`$${property.purchasePrice}`})</span>
+                    </label>
                   ))}
-              </select>
-            </label>
+                </div>
+              )}
+            </div>
           )}
 
           <label>

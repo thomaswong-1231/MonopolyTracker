@@ -768,6 +768,13 @@ textarea {
   border: 1px solid #d7dce5;
   background: #ffffff;
   box-shadow: 0 1px 0 #11182708;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.asset-property-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px #1f293711;
+  border-color: #bfdbfe;
 }
 
 .asset-property-card .property-main {
@@ -838,6 +845,12 @@ textarea {
   justify-content: flex-start;
 }
 
+.asset-house-button:hover:not([disabled]) {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px #dbeafe;
+}
+
 .asset-property-rent-spotlight .property-rent-label {
   font-size: 1rem;
   font-weight: 600;
@@ -855,12 +868,8 @@ textarea {
   background: #ffffff;
 }
 
-.asset-command-button.button:hover:not([disabled]) {
+.asset-command-button.button:hover:not([disabled]):not(.button-muted) {
   background: #1d4ed8;
-}
-
-.asset-property-card-full-set {
-  transition: box-shadow 180ms ease, transform 180ms ease, background 180ms ease, border-color 180ms ease;
 }
 
 .asset-property-card-full-set:hover {
@@ -972,9 +981,12 @@ textarea {
   position: fixed;
   inset: 0;
   background: #00000066;
-  display: grid;
-  place-items: center;
-  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  padding: 20px 12px;
+  z-index: 1000;
 }
 
 .modal {
@@ -982,6 +994,8 @@ textarea {
   background: white;
   border-radius: 16px;
   padding: 14px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 .property-checkbox-list {
@@ -1005,7 +1019,8 @@ textarea {
   width: 100%;
 }
 
-.property-checkbox-item input[type="checkbox"] {
+.property-checkbox-item input[type="checkbox"],
+.property-checkbox-item input[type="radio"] {
   width: 18px;
   height: 18px;
   min-height: 18px;
@@ -1180,13 +1195,9 @@ textarea {
 @keyframes pageFadeSlide {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.995);
-    filter: blur(1px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 
