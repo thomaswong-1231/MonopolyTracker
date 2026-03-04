@@ -127,7 +127,7 @@ const calculateNetWorth = (session: GameSession, playerId: string) => {
     const propertyState = session.properties[property.id];
     if (!propertyState || propertyState.ownerId !== playerId) return total;
 
-    const propertyValue = property.mortgageValue;
+    const propertyValue = propertyState.mortgaged ? 0 : property.mortgageValue;
     const houseUnits = propertyState.hotel ? 5 : propertyState.houses;
     const liquidationPerUnit = Math.floor((property.rent.houseCost ?? 0) / 2);
     const houseLiquidationValue = houseUnits * liquidationPerUnit;
