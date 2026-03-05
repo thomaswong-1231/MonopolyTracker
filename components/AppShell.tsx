@@ -15,8 +15,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("monopoly-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const shouldUseDark = storedTheme ? storedTheme === "dark" : prefersDark;
+    const shouldUseDark = storedTheme === "dark";
     setIsDarkMode(shouldUseDark);
     document.documentElement.classList.toggle("theme-dark", shouldUseDark);
   }, []);
