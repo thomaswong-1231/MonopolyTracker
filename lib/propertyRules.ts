@@ -55,7 +55,15 @@ export const getCurrentRentDisplay = (session: GameSession, propertyId: string) 
     return formatMoney(property.rent.base);
   }
 
-  return `${property.rent.utilityOneMultiplier ?? 4}x / ${property.rent.utilityBothMultiplier ?? 10}x dice`;
+  const ownerId = state.ownerId;
+  const utilityOneMultiplier = property.rent.utilityOneMultiplier ?? 4;
+  const utilityBothMultiplier = property.rent.utilityBothMultiplier ?? 10;
+  if (!ownerId) return `${utilityOneMultiplier}x dice`;
+
+  const ownedUtilityCount = MONOPOLY_PROPERTIES.filter(
+    (entry) => entry.type === "utility" && session.properties[entry.id]?.ownerId === ownerId
+  ).length;
+  return ownedUtilityCount >= 2 ? `${utilityBothMultiplier}x dice` : `${utilityOneMultiplier}x dice`;
 };
 
 export const getHousePurchaseEligibility = (

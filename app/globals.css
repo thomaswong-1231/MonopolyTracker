@@ -2,13 +2,20 @@
   box-sizing: border-box;
 }
 
+:root {
+  --page-bg: #f5f7fb;
+  --text-main: #111827;
+  --surface: #ffffff;
+  --surface-border: #d1d5db;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
   font-family: Inter, system-ui, -apple-system, sans-serif;
-  background: #f5f7fb;
-  color: #111827;
+  background: var(--page-bg);
+  color: var(--text-main);
 }
 
 a {
@@ -43,6 +50,11 @@ textarea {
   gap: 8px;
 }
 
+.header-right {
+  display: flex;
+  align-items: flex-start;
+}
+
 .back-button {
   width: 40px;
   height: 40px;
@@ -57,6 +69,60 @@ textarea {
 
 .back-button:hover {
   background: #f8fafc;
+}
+
+.darkmode-toggle-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+}
+
+.darkmode-toggle {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.darkmode-toggle:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.top-hat-icon {
+  display: inline-block;
+  font-size: 1.45rem;
+  line-height: 1;
+  transform-origin: center center;
+}
+
+.top-hat-icon.spinning {
+  animation: hatSpin 620ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.darkmode-hover-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 160ms ease, transform 160ms ease;
+  color: #64748b;
+  text-transform: lowercase;
+  pointer-events: none;
+}
+
+.darkmode-toggle-wrap:hover .darkmode-hover-label,
+.darkmode-toggle-wrap:focus-within .darkmode-hover-label {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .brand {
@@ -130,8 +196,8 @@ textarea {
 
 .nav-link {
   text-align: center;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   min-height: 44px;
   display: grid;
@@ -380,8 +446,8 @@ textarea {
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   padding: 14px;
 }
@@ -403,11 +469,12 @@ label {
 input,
 select,
 textarea {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   min-height: 44px;
   padding: 10px 12px;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text-main);
 }
 
 textarea {
@@ -574,6 +641,53 @@ textarea {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.player-color-shell {
+  position: relative;
+  overflow: hidden;
+  padding-left: 22px;
+}
+
+.player-color-bar {
+  display: block;
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+  height: 100%;
+  margin: 0;
+  border-radius: 14px 0 0 14px;
+}
+
+.player-token {
+  font-size: 1.35rem;
+  line-height: 1;
+  width: 1.6em;
+  display: inline-grid;
+  place-items: center;
+}
+
+.player-profile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.player-profile-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.player-profile-control {
+  width: 168px;
+  gap: 4px;
+}
+
+.player-profile-control select {
+  min-height: 40px;
+  width: 100%;
 }
 
 .color-dot {
@@ -768,13 +882,14 @@ textarea {
   border: 1px solid #d7dce5;
   background: #ffffff;
   box-shadow: 0 1px 0 #11182708;
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, border-color 220ms ease, background 220ms ease, filter 220ms ease;
 }
 
 .asset-property-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px #1f293711;
-  border-color: #bfdbfe;
+  transform: translateY(-5px) scale(1.012);
+  box-shadow: 0 16px 30px #1f293726, 0 3px 10px #0f172a1a;
+  border-color: #93c5fd;
+  filter: saturate(1.06);
 }
 
 .asset-property-card .property-main {
@@ -785,6 +900,168 @@ textarea {
 .asset-property-card .property-name-title {
   font-size: 1.45rem;
   line-height: 1.1;
+}
+
+.rent-property-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rent-property-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rent-property-card-button {
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  background: var(--surface);
+  border-color: var(--surface-border);
+  color: var(--text-main);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.rent-property-card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px #1f29371a;
+}
+
+.rent-property-card-button.selected {
+  border-color: var(--rent-property-color, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rent-property-color, #2563eb) 35%, transparent), 0 12px 22px #1d4ed824;
+}
+
+.rent-property-card-button .property-name-title {
+  margin-bottom: 0;
+}
+
+.rent-property-color-bar {
+  background-color: var(--rent-property-banner-color, var(--rent-property-color, #94a3b8));
+}
+
+.buy-property-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.buy-property-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.buy-property-card-button {
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  background: var(--surface);
+  border-color: var(--surface-border);
+  color: var(--text-main);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.buy-property-card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px #1f29371a;
+}
+
+.buy-property-card-button.selected {
+  border-color: var(--buy-property-color, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--buy-property-color, #2563eb) 35%, transparent), 0 12px 22px #1d4ed824;
+}
+
+.buy-property-card-main {
+  gap: 6px;
+}
+
+.buy-property-card-top {
+  min-height: 46px;
+}
+
+.buy-property-name {
+  line-height: 1.15;
+  display: inline-block;
+}
+
+.buy-property-meta {
+  min-height: 22px;
+}
+
+.buy-property-price-box {
+  min-width: 0;
+  border-color: color-mix(in srgb, var(--buy-property-color, #2563eb) 24%, #dbeafe);
+  background: color-mix(in srgb, var(--buy-property-color, #2563eb) 10%, #eff6ff);
+  text-align: center;
+}
+
+.buy-property-price-box .property-rent-label,
+.buy-property-price-box .property-rent-value {
+  color: var(--buy-property-price-color-light, color-mix(in srgb, var(--buy-property-color, #2563eb) 72%, #1e3a8a));
+}
+
+.rent-property-price-box .property-rent-label,
+.rent-property-price-box .property-rent-value {
+  color: var(--rent-property-price-color-light, color-mix(in srgb, var(--rent-property-color, #2563eb) 72%, #1e3a8a));
+}
+
+.trade-property-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-property-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trade-property-card-button {
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  background: var(--surface);
+  border-color: var(--surface-border);
+  color: var(--text-main);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.trade-property-card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px #1f29371a;
+}
+
+.trade-property-card-button.selected {
+  border-color: var(--trade-property-color, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--trade-property-color, #2563eb) 35%, transparent), 0 12px 22px #1d4ed824;
+}
+
+.trade-property-card-button .buy-property-card-main {
+  gap: 4px;
+}
+
+.trade-property-card-button .buy-property-card-top {
+  min-height: 40px;
+}
+
+.trade-property-card-button .buy-property-name {
+  font-size: 1.12rem;
+}
+
+.trade-property-color-bar {
+  background-color: var(--trade-property-color, #94a3b8);
+}
+
+.trade-property-rent-box .property-rent-label,
+.trade-property-rent-box .property-rent-value {
+  color: var(--trade-property-price-color-light, color-mix(in srgb, var(--trade-property-color, #2563eb) 72%, #1e3a8a));
 }
 
 .asset-property-card .badge {
@@ -873,12 +1150,15 @@ textarea {
 }
 
 .asset-property-card-full-set:hover {
-  border-color: transparent;
+  border: 2px solid transparent;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(120deg, #3b82f6, #8b5cf6, #22c55e, #f59e0b) border-box;
-  box-shadow: 0 10px 24px #2563eb2a;
-  transform: translateY(-1px);
+    linear-gradient(120deg, #3b82f6, #8b5cf6, #22c55e, #f59e0b, #ef4444, #3b82f6) border-box;
+  background-size: 100% 100%, 260% 260%;
+  animation: fullSetBorderShift 1.7s linear infinite;
+  box-shadow: 0 20px 38px #2563eb45, 0 0 0 1px #60a5fa55;
+  transform: translateY(-7px) scale(1.016);
+  filter: saturate(1.15);
 }
 
 .group-card {
@@ -991,7 +1271,7 @@ textarea {
 
 .modal {
   width: min(560px, 100%);
-  background: white;
+  background: var(--surface);
   border-radius: 16px;
   padding: 14px;
   max-height: calc(100vh - 40px);
@@ -1001,10 +1281,10 @@ textarea {
 .property-checkbox-list {
   max-height: 220px;
   overflow: auto;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   padding: 8px;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1159,6 +1439,27 @@ textarea {
     width: auto;
     min-width: 112px;
   }
+
+  .buy-property-group {
+    grid-template-columns: 1fr;
+  }
+
+  .rent-property-group {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-property-group {
+    grid-template-columns: 1fr;
+  }
+
+  .player-profile-top {
+    flex-direction: column;
+  }
+
+  .player-profile-controls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 @keyframes spin {
@@ -1201,8 +1502,205 @@ textarea {
   }
 }
 
+@keyframes hatSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fullSetBorderShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 260% 50%;
+  }
+}
+
+@keyframes rentSelectionBorderShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 220% 50%;
+  }
+}
+
+@keyframes rentSelectionPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #93c5fd70, 0 12px 22px #1d4ed826;
+  }
+  50% {
+    box-shadow: 0 0 0 3px #60a5fa88, 0 15px 26px #1d4ed833;
+  }
+}
+
+html.theme-dark {
+  --page-bg: #0b1220;
+  --text-main: #e2e8f0;
+  --surface: #111827;
+  --surface-border: #334155;
+}
+
+html.theme-dark .back-button,
+html.theme-dark .menu-button,
+html.theme-dark .button-muted,
+html.theme-dark .button-white,
+html.theme-dark .asset-command-button.button-muted,
+html.theme-dark .darkmode-toggle {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+html.theme-dark .brand-subtitle,
+html.theme-dark .home-subtitle,
+html.theme-dark .muted,
+html.theme-dark .asset-rent-meta,
+html.theme-dark .inline-color,
+html.theme-dark .darkmode-hover-label {
+  color: #94a3b8;
+}
+
+html.theme-dark .row-between,
+html.theme-dark .property-row,
+html.theme-dark .asset-property-card,
+html.theme-dark .history-row,
+html.theme-dark .title-deed-header {
+  border-color: #334155;
+}
+
+html.theme-dark .player-index-label,
+html.theme-dark .player-net-worth,
+html.theme-dark .cash,
+html.theme-dark .assets-title {
+  color: #f8fafc;
+}
+
+html.theme-dark .player-money-box {
+  background: #172554;
+  border-color: #1d4ed8;
+}
+
+html.theme-dark .dashboard-cash,
+html.theme-dark .nav-link.active,
+html.theme-dark .property-rent-value,
+html.theme-dark .asset-property-rent-spotlight .property-rent-label {
+  color: #93c5fd;
+}
+
+html.theme-dark .property-rent-spotlight {
+  background: #172554;
+  border-color: #1e3a8a;
+}
+
+html.theme-dark .property-rent-label,
+html.theme-dark .property-rent-sub {
+  color: #bfdbfe;
+}
+
+html.theme-dark .badge {
+  background: #312e81;
+  color: #c7d2fe;
+}
+
+html.theme-dark .title-deed {
+  background: #0f172a;
+  border-color: #475569;
+  box-shadow: 0 10px 24px #02061799;
+}
+
+html.theme-dark .title-deed-header {
+  border-color: #64748b;
+}
+
+html.theme-dark .toast {
+  background: #020617;
+}
+
+html.theme-dark .asset-property-card {
+  background: #0f172a;
+}
+
+html.theme-dark .rent-property-card-button.selected {
+  border-color: var(--rent-property-color, #60a5fa);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rent-property-color, #60a5fa) 45%, transparent), 0 12px 22px #0ea5e933;
+}
+
+html.theme-dark .buy-property-card-button.selected {
+  border-color: var(--buy-property-color, #60a5fa);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--buy-property-color, #60a5fa) 45%, transparent), 0 12px 22px #0ea5e933;
+}
+
+html.theme-dark .buy-property-price-box {
+  border-color: color-mix(in srgb, var(--buy-property-color, #60a5fa) 35%, #1e3a8a);
+  background: color-mix(in srgb, var(--buy-property-color, #60a5fa) 20%, #172554);
+}
+
+html.theme-dark .buy-property-price-box .property-rent-label,
+html.theme-dark .buy-property-price-box .property-rent-value {
+  color: var(--buy-property-price-color-dark, color-mix(in srgb, var(--buy-property-color, #60a5fa) 70%, #bfdbfe));
+}
+
+html.theme-dark .rent-property-price-box .property-rent-label,
+html.theme-dark .rent-property-price-box .property-rent-value {
+  color: var(--rent-property-price-color-dark, color-mix(in srgb, var(--rent-property-color, #60a5fa) 70%, #bfdbfe));
+}
+
+html.theme-dark .trade-property-card-button.selected {
+  border-color: var(--trade-property-color, #60a5fa);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--trade-property-color, #60a5fa) 45%, transparent), 0 12px 22px #0ea5e933;
+}
+
+html.theme-dark .trade-property-rent-box .property-rent-label,
+html.theme-dark .trade-property-rent-box .property-rent-value {
+  color: var(--trade-property-price-color-dark, color-mix(in srgb, var(--trade-property-color, #60a5fa) 70%, #bfdbfe));
+}
+
+html.theme-dark .rent-property-color-bar {
+  background-color: color-mix(
+    in srgb,
+    var(--rent-property-banner-color-dark, var(--rent-property-color, #94a3b8)) 82%,
+    #e2e8f0
+  );
+}
+
+html.theme-dark .asset-property-card-full-set:hover {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#0f172a, #0f172a) padding-box,
+    linear-gradient(120deg, #3b82f6, #8b5cf6, #22c55e, #f59e0b, #ef4444, #3b82f6) border-box;
+  background-size: 100% 100%, 260% 260%;
+  animation: fullSetBorderShift 1.7s linear infinite;
+  box-shadow: 0 22px 40px #0ea5e944, 0 0 0 1px #60a5fa66;
+  filter: saturate(1.15);
+}
+
+html.theme-dark .app-nav .nav-link {
+  background: #0f172a;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-enter {
     animation: none;
+  }
+
+  .top-hat-icon.spinning {
+    animation: none;
+  }
+
+  .asset-property-card:hover,
+  .asset-property-card-full-set:hover,
+  html.theme-dark .asset-property-card-full-set:hover,
+  .rent-property-card-button.selected,
+  .rent-property-card-button:hover,
+  .trade-property-card-button:hover,
+  .buy-property-card-button:hover,
+  html.theme-dark .rent-property-card-button.selected {
+    animation: none;
+    transform: none;
   }
 }

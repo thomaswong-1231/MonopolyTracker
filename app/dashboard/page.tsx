@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { PropertyTransferModal } from "@/components/PropertyTransferModal";
 import { TransactionModal } from "@/components/TransactionModal";
 import { MONOPOLY_PROPERTIES } from "@/lib/monopolyData";
+import { getCurrentRentDisplay } from "@/lib/propertyRules";
 import { calculateNetWorth, money, useGame } from "@/lib/gameStore";
 import { TransactionType } from "@/lib/types";
 
 export default function DashboardPage() {
+  const playerTokenOptions = ["🎩", "🐶", "🐱", "🚢", "🚗", "👢", "🦆", "🐧", "🛞", "🧺"];
   const router = useRouter();
   const { session, recordTransaction, transferProperty } = useGame();
 
@@ -43,13 +45,16 @@ export default function DashboardPage() {
 
       <div className="grid dashboard-player-list">
         {session.players.map((player, index) => {
+          const displayAvatar = playerTokenOptions.includes(player.avatar)
+            ? player.avatar
+            : playerTokenOptions[index % playerTokenOptions.length];
           const netWorth = calculateNetWorth(session, player.id);
           const ownedProperties = MONOPOLY_PROPERTIES.filter(
             (property) => session.properties[property.id]?.ownerId === player.id
           );
           return (
             <article
-              className="card player-card clickable-card"
+              className="card player-card player-color-shell clickable-card"
               key={player.id}
               onClick={() => router.push(`/players/${player.id}`)}
               role="button"
@@ -61,11 +66,12 @@ export default function DashboardPage() {
                 }
               }}
             >
+              <span className="player-color-bar" style={{ backgroundColor: player.color }} aria-hidden />
               <div className="player-summary-row">
                 <div className="player-summary-left">
                   <p className="player-index-label">Player {index + 1}:</p>
                   <div className="player-head">
-                    <span className="color-dot" style={{ backgroundColor: player.color }} aria-hidden />
+                    <span className="player-token" aria-hidden>{displayAvatar}</span>
                     <strong>{player.name}</strong>
                   </div>
                   <p className="muted tiny player-properties-inline">
@@ -95,9 +101,15 @@ export default function DashboardPage() {
         properties={MONOPOLY_PROPERTIES.map((property) => ({
           id: property.id,
           name: property.name,
+          type: property.type,
           purchasePrice: property.purchasePrice,
+          mortgageValue: property.mortgageValue,
           colorGroup: property.colorGroup,
-          ownerId: session.properties[property.id]?.ownerId ?? null
+          ownerId: session.properties[property.id]?.ownerId ?? null,
+          houses: session.properties[property.id]?.houses ?? 0,
+          hotel: session.properties[property.id]?.hotel ?? false,
+          mortgaged: session.properties[property.id]?.mortgaged ?? false,
+          currentRentDisplay: getCurrentRentDisplay(session, property.id)
         }))}
         onSave={recordTransaction}
         initial={preset}
@@ -111,7 +123,8 @@ export default function DashboardPage() {
           id: property.id,
           name: property.name,
           colorGroup: property.colorGroup,
-          ownerId: session.properties[property.id]?.ownerId ?? null
+          ownerId: session.properties[property.id]?.ownerId ?? null,
+          currentRentDisplay: getCurrentRentDisplay(session, property.id)
         }))}
         onSave={transferProperty}
       />

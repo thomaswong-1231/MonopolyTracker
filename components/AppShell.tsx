@@ -2,13 +2,50 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { useGame } from "@/lib/gameStore";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { session, storageError } = useGame();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSpinActive, setIsSpinActive] = useState(false);
+  const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const storedTheme = window.localStorage.getItem("monopoly-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldUseDark = storedTheme ? storedTheme === "dark" : prefersDark;
+    setIsDarkMode(shouldUseDark);
+    document.documentElement.classList.toggle("theme-dark", shouldUseDark);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("theme-dark", isDarkMode);
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    return () => {
+      if (spinTimeoutRef.current) {
+        clearTimeout(spinTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleDarkModeToggle = () => {
+    setIsSpinActive(true);
+    if (spinTimeoutRef.current) {
+      clearTimeout(spinTimeoutRef.current);
+    }
+    spinTimeoutRef.current = setTimeout(() => setIsSpinActive(false), 650);
+    setIsDarkMode((current) => {
+      const next = !current;
+      window.localStorage.setItem("monopoly-theme", next ? "dark" : "light");
+      return next;
+    });
+  };
+
   const showGameNav =
     !!session &&
     (pathname.startsWith("/dashboard") ||
@@ -51,6 +88,24 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="brand-subtitle">Tracker</span>
             </span>
           </Link>
+        </div>
+        <div className="header-right">
+          <div className="darkmode-toggle-wrap">
+            <button
+              type="button"
+              className="darkmode-toggle"
+              onClick={handleDarkModeToggle}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              title={isDarkMode ? "Light mode" : "Dark mode"}
+            >
+              <span className={`top-hat-icon ${isSpinActive ? "spinning" : ""}`} aria-hidden="true">
+                🎩
+              </span>
+            </button>
+            <span className="darkmode-hover-label" aria-hidden="true">
+              darkmode
+            </span>
+          </div>
         </div>
       </header>
 

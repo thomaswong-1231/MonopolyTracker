@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { MONOPOLY_PROPERTIES } from "@/lib/monopolyData";
+import { MONOPOLY_PROPERTIES, PLAYER_TOKEN_OPTIONS } from "@/lib/monopolyData";
 import {
   getHotelPurchaseEligibility,
   getHousePurchaseEligibility,
@@ -48,6 +48,7 @@ interface GameContextValue {
     fromPlayerId: string;
     toPlayerId: string;
     propertyIds: string[];
+    cashFromPlayer?: number;
     note?: string;
   }) => { ok: boolean; reason?: string };
   buyHouse: (propertyId: string) => { ok: boolean; reason?: string };
@@ -337,11 +338,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
 
         const trimmedName = name.trim();
+        const usedAvatars = new Set(currentSession.players.map((player) => player.avatar));
+        const nextToken = PLAYER_TOKEN_OPTIONS.find((token) => !usedAvatars.has(token));
         const player: Player = {
           id: uid(),
           name: trimmedName,
           color,
-          avatar: avatar?.trim() || trimmedName.slice(0, 1).toUpperCase() || "?",
+          avatar: avatar?.trim() || nextToken || trimmedName.slice(0, 1).toUpperCase() || "?",
           cash: currentSession.startingCash
         };
 
@@ -515,6 +518,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
           reason = "Payer and receiver cannot be the same player";
           return false;
         }
+        let rentPropertyName: string | undefined;
+        if (propertyId) {
+          const rentProperty = MONOPOLY_PROPERTIES.find((property) => property.id === propertyId);
+          if (!rentProperty) {
+            reason = "Selected rent property is invalid";
+            return false;
+          }
+          const rentPropertyState = currentSession.properties[propertyId];
+          if (!rentPropertyState || rentPropertyState.ownerId !== toPlayer.id) {
+            reason = "Selected rent property is not owned by the receiving player";
+            return false;
+          }
+          rentPropertyName = rentProperty.name;
+        }
         if (fromPlayer.cash < amount) {
           reason = `${fromPlayer.name} does not have enough cash`;
           return false;
@@ -523,10 +540,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
         toPlayer.cash += amount;
         pushHistory(currentSession, {
           eventType: "cash",
-          description: `${fromPlayer.name} paid ${toPlayer.name} $${amount}`,
+          description: rentPropertyName
+            ? `${fromPlayer.name} paid ${toPlayer.name} $${amount} rent for ${rentPropertyName}`
+            : `${fromPlayer.name} paid ${toPlayer.name} $${amount}`,
           fromPlayerId: fromPlayer.id,
           toPlayerId: toPlayer.id,
           amount,
+          propertyId: propertyId || undefined,
           note: note?.trim()
         });
 
@@ -545,6 +565,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     fromPlayerId,
     toPlayerId,
     propertyIds,
+    cashFromPlayer = 0,
     note
   }) => {
     let reason: string | undefined = "Unable to transfer property";
@@ -562,9 +583,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
           return false;
         }
 
+        if (!Number.isInteger(cashFromPlayer) || cashFromPlayer < 0) {
+          reason = "Cash trade value must be a whole number greater than or equal to 0";
+          return false;
+        }
+
         const uniquePropertyIds = Array.from(new Set(propertyIds));
-        if (uniquePropertyIds.length === 0) {
-          reason = "Select at least one property";
+        const hasCashTrade = cashFromPlayer > 0;
+        if (uniquePropertyIds.length === 0 && !hasCashTrade) {
+          reason = "Select at least one property or include a cash amount";
           return false;
         }
 
@@ -596,9 +623,34 @@ export function GameProvider({ children }: { children: ReactNode }) {
             note: note?.trim()
           });
         }
+
+        if (cashFromPlayer > 0) {
+          if (fromPlayer.cash < cashFromPlayer) {
+            reason = `${fromPlayer.name} does not have enough cash`;
+            return false;
+          }
+          fromPlayer.cash -= cashFromPlayer;
+          toPlayer.cash += cashFromPlayer;
+          pushHistory(currentSession, {
+            eventType: "cash",
+            description: `${fromPlayer.name} paid ${toPlayer.name} $${cashFromPlayer} as part of a trade`,
+            fromPlayerId,
+            toPlayerId,
+            amount: cashFromPlayer,
+            note: note?.trim()
+          });
+        }
         return true;
       },
-      { pushUndo: true, toast: propertyIds.length > 1 ? "Properties transferred" : "Property transferred" }
+      {
+        pushUndo: true,
+        toast:
+          propertyIds.length > 1
+            ? "Trade completed"
+            : propertyIds.length === 1 || cashFromPlayer > 0
+              ? "Trade completed"
+              : "Trade saved"
+      }
     );
 
     if (!ok && !reason) {

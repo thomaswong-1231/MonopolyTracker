@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PLAYER_COLOR_OPTIONS } from "@/lib/monopolyData";
+import { PLAYER_COLOR_OPTIONS, PLAYER_TOKEN_CHOICES, PLAYER_TOKEN_OPTIONS } from "@/lib/monopolyData";
 import { useGame } from "@/lib/gameStore";
 
 export default function SettingsPage() {
@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [startingCash, setStartingCash] = useState(session ? String(session.startingCash) : "1500");
   const [playerName, setPlayerName] = useState("");
   const [playerColor, setPlayerColor] = useState(PLAYER_COLOR_OPTIONS[0].value);
-  const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState(PLAYER_TOKEN_OPTIONS[0]);
   const [error, setError] = useState("");
 
   if (!session) {
@@ -52,7 +52,7 @@ export default function SettingsPage() {
       return;
     }
     setPlayerName("");
-    setAvatar("");
+    setAvatar(PLAYER_TOKEN_OPTIONS[0]);
     setError("");
   };
 
@@ -96,8 +96,12 @@ export default function SettingsPage() {
           {PLAYER_COLOR_OPTIONS.find((color) => color.value === playerColor)?.name ?? "Custom"}
         </p>
         <label>
-          Avatar / Initial (optional)
-          <input value={avatar} maxLength={2} onChange={(event) => setAvatar(event.target.value)} />
+          Token
+          <select value={avatar} onChange={(event) => setAvatar(event.target.value)}>
+            {PLAYER_TOKEN_CHOICES.map((token) => (
+              <option key={token.value} value={token.value}>{token.value} {token.name}</option>
+            ))}
+          </select>
         </label>
         <button className="button" type="submit" disabled={session.players.length >= 10}>Add Player</button>
       </form>

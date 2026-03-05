@@ -5,7 +5,14 @@ import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PropertyTransferModal } from "@/components/PropertyTransferModal";
 import { TransactionModal } from "@/components/TransactionModal";
-import { COLOR_GROUP_COLORS, COLOR_GROUP_ORDER, MONOPOLY_PROPERTIES } from "@/lib/monopolyData";
+import {
+  COLOR_GROUP_COLORS,
+  COLOR_GROUP_ORDER,
+  MONOPOLY_PROPERTIES,
+  PLAYER_COLOR_OPTIONS,
+  PLAYER_TOKEN_CHOICES,
+  PLAYER_TOKEN_OPTIONS
+} from "@/lib/monopolyData";
 import {
   getBuildingUnits,
   getCompleteStreetSetCount,
@@ -21,7 +28,7 @@ import { TransactionType } from "@/lib/types";
 export default function PlayerDetailPage() {
   const params = useParams<{ playerId: string }>();
   const router = useRouter();
-  const { session, buyHouse, buyHotel, sellHouse, recordTransaction, transferProperty, mortgageProperty, unmortgageProperty } = useGame();
+  const { session, buyHouse, buyHotel, sellHouse, recordTransaction, transferProperty, mortgageProperty, unmortgageProperty, editPlayer } = useGame();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentPreset, setPaymentPreset] = useState<{
     type?: TransactionType;
@@ -54,6 +61,13 @@ export default function PlayerDetailPage() {
     if (!session || !player) return 0;
     return getCompleteStreetSetCount(session, player.id);
   }, [session, player]);
+  const avatarFallbackIndex =
+    session && player ? Math.max(0, session.players.findIndex((entry) => entry.id === player.id)) : 0;
+  const displayAvatar = player
+    ? PLAYER_TOKEN_OPTIONS.includes(player.avatar)
+      ? player.avatar
+      : PLAYER_TOKEN_OPTIONS[avatarFallbackIndex % PLAYER_TOKEN_OPTIONS.length]
+    : "🎩";
 
   if (!session) {
     return (
@@ -75,10 +89,45 @@ export default function PlayerDetailPage() {
 
   return (
     <section className="stack">
-      <div className="card stack">
-        <div className="player-head">
-          <span className="color-dot" style={{ backgroundColor: player.color }} aria-hidden />
-          <h1>{player.name}</h1>
+      <div className="card stack player-profile-card player-color-shell">
+        <span className="player-color-bar" style={{ backgroundColor: player.color }} aria-hidden />
+        <div className="player-profile-top">
+          <div className="player-head">
+            <span className="player-token" aria-hidden>{displayAvatar}</span>
+            <h1>{player.name}</h1>
+          </div>
+          <div className="player-profile-controls">
+            <label className="player-profile-control">
+              <span className="tiny muted">Color</span>
+              <select
+                value={player.color}
+                onChange={(event) =>
+                  editPlayer(player.id, { name: player.name, color: event.target.value, avatar: player.avatar })
+                }
+              >
+                {PLAYER_COLOR_OPTIONS.map((color) => (
+                  <option key={color.value} value={color.value}>
+                    {color.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="player-profile-control">
+              <span className="tiny muted">Token</span>
+              <select
+                value={PLAYER_TOKEN_OPTIONS.includes(player.avatar) ? player.avatar : PLAYER_TOKEN_OPTIONS[0]}
+                onChange={(event) =>
+                  editPlayer(player.id, { name: player.name, color: player.color, avatar: event.target.value })
+                }
+              >
+                {PLAYER_TOKEN_CHOICES.map((token) => (
+                  <option key={token.value} value={token.value}>
+                    {token.value} {token.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
         <p className={`cash ${player.cash < 0 ? "negative" : ""}`}>Cash: {money(player.cash)}</p>
         <p>Net worth: {money(calculateNetWorth(session, player.id))}</p>
@@ -297,9 +346,15 @@ export default function PlayerDetailPage() {
         properties={MONOPOLY_PROPERTIES.map((property) => ({
           id: property.id,
           name: property.name,
+          type: property.type,
           purchasePrice: property.purchasePrice,
+          mortgageValue: property.mortgageValue,
           colorGroup: property.colorGroup,
-          ownerId: session.properties[property.id]?.ownerId ?? null
+          ownerId: session.properties[property.id]?.ownerId ?? null,
+          houses: session.properties[property.id]?.houses ?? 0,
+          hotel: session.properties[property.id]?.hotel ?? false,
+          mortgaged: session.properties[property.id]?.mortgaged ?? false,
+          currentRentDisplay: getCurrentRentDisplay(session, property.id)
         }))}
         onSave={recordTransaction}
         initial={paymentPreset}
@@ -313,7 +368,8 @@ export default function PlayerDetailPage() {
           id: property.id,
           name: property.name,
           colorGroup: property.colorGroup,
-          ownerId: session.properties[property.id]?.ownerId ?? null
+          ownerId: session.properties[property.id]?.ownerId ?? null,
+          currentRentDisplay: getCurrentRentDisplay(session, property.id)
         }))}
         initialFromPlayerId={player.id}
         onSave={transferProperty}

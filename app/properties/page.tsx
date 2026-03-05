@@ -46,6 +46,7 @@ export default function PropertiesPage() {
           <div className="property-meta">
             <span className="muted tiny">Current rent: {getCurrentRentDisplay(session, property.id)}</span>
             <span className="muted tiny">Full set rent: {getFullSetRentDisplay(property)}</span>
+            {!owner && <span className="muted tiny property-price-line">Price: {money(property.purchasePrice)}</span>}
             {property.type === "street" && (
               <span className="muted tiny">
                 Base {money(property.rent.base)} · H:{state.houses} {state.hotel ? "| Hotel" : ""} {state.mortgaged ? "| Mortgaged" : ""}

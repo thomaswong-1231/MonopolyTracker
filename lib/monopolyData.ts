@@ -302,3 +302,20 @@ export const PLAYER_COLOR_OPTIONS = [
   { name: "Indigo", value: "#6366f1" },
   { name: "Lime", value: "#84cc16" }
 ];
+
+export const PLAYER_TOKEN_CHOICES = [
+  { name: "Top Hat", value: "🎩" },
+  { name: "Dog", value: "🐶" },
+  { name: "Cat", value: "🐱" },
+  { name: "Battleship", value: "🚢" },
+  { name: "Race Car", value: "🚗" },
+  { name: "Boot", value: "👢" },
+  { name: "Duck", value: "🦆" },
+  { name: "Penguin", value: "🐧" },
+  { name: "Wheelbarrow", value: "🛞" },
+  { name: "Thimble", value: "🧺" },
+  { name: "Horse", value: "🐴" },
+  { name: "Train", value: "🚂" }
+];
+
+export const PLAYER_TOKEN_OPTIONS = PLAYER_TOKEN_CHOICES.map((token) => token.value);

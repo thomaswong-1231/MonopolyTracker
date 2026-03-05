@@ -1,14 +1,21 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { COLOR_GROUP_COLORS } from "@/lib/monopolyData";
 import { BankPaymentReason, Player, TransactionType } from "@/lib/types";
 
 interface PropertyOption {
   id: string;
   name: string;
+  type: "street" | "railroad" | "utility";
   ownerId: string | null;
   purchasePrice: number;
+  mortgageValue: number;
   colorGroup: string;
+  houses: number;
+  hotel: boolean;
+  mortgaged: boolean;
+  currentRentDisplay: string;
 }
 
 interface TransactionModalProps {
@@ -34,18 +41,7 @@ interface TransactionModalProps {
 }
 
 export function TransactionModal({ open, onClose, players, properties, onSave, initial }: TransactionModalProps) {
-  const colorByGroup: Record<string, string> = {
-    Brown: "#8b5a2b",
-    "Light Blue": "#7ec8f5",
-    Pink: "#ec4899",
-    Orange: "#f97316",
-    Red: "#ef4444",
-    Yellow: "#eab308",
-    Green: "#16a34a",
-    "Dark Blue": "#1d4ed8",
-    Railroad: "#111827",
-    Utility: "#9ca3af"
-  };
+  const colorByGroup: Record<string, string> = COLOR_GROUP_COLORS;
 
   const [type, setType] = useState<TransactionType>(initial?.type ?? "player_to_bank");
   const [amount, setAmount] = useState("");
@@ -60,6 +56,51 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
 
   const selectedProperty = properties.find((property) => property.id === propertyId);
   const availableProperties = properties.filter((property) => property.ownerId === null);
+  const rentTargetProperties = useMemo(
+    () => properties.filter((property) => property.ownerId === toPlayerId),
+    [properties, toPlayerId]
+  );
+  const availablePropertyGroups = useMemo(() => {
+    const colorGroupDisplayOrder = [
+      "Brown",
+      "Light Blue",
+      "Pink",
+      "Orange",
+      "Red",
+      "Yellow",
+      "Green",
+      "Dark Blue",
+      "Railroad",
+      "Utility"
+    ];
+    const unowned = properties.filter((property) => property.ownerId === null);
+    return colorGroupDisplayOrder
+      .map((group) => ({
+        group,
+        properties: unowned.filter((property) => property.colorGroup === group)
+      }))
+      .filter((entry) => entry.properties.length > 0);
+  }, [properties]);
+  const rentPropertyGroups = useMemo(() => {
+    const colorGroupDisplayOrder = [
+      "Brown",
+      "Light Blue",
+      "Pink",
+      "Orange",
+      "Red",
+      "Yellow",
+      "Green",
+      "Dark Blue",
+      "Railroad",
+      "Utility"
+    ];
+    return colorGroupDisplayOrder
+      .map((group) => ({
+        group,
+        properties: properties.filter((property) => property.ownerId === toPlayerId && property.colorGroup === group)
+      }))
+      .filter((entry) => entry.properties.length > 0);
+  }, [properties, toPlayerId]);
   const parsedAmount = amount === "" ? NaN : Number(amount);
   const effectiveAmount = parsedAmount;
   const fromPlayer = players.find((player) => player.id === fromPlayerId);
@@ -83,7 +124,7 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
     }
     if (type === "bank_to_player") return !!toPlayerId;
     return !!fromPlayerId && !!toPlayerId && fromPlayerId !== toPlayerId;
-  }, [parsedAmount, type, fromPlayerId, toPlayerId, note.length, bankPaymentReason, propertyId, selectedProperty, projectedNegative]);
+  }, [parsedAmount, type, fromPlayerId, toPlayerId, note.length, bankPaymentReason, propertyId, projectedNegative]);
 
   useEffect(() => {
     if (!open) return;
@@ -102,6 +143,20 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
     if (!selectedProperty) return;
     setAmount(String(selectedProperty.purchasePrice));
   }, [type, bankPaymentReason, selectedProperty?.id]);
+
+  useEffect(() => {
+    if (type !== "player_to_player") return;
+    if (!selectedProperty || selectedProperty.ownerId !== toPlayerId) {
+      setPropertyId("");
+      return;
+    }
+    if (selectedProperty.currentRentDisplay.startsWith("$")) {
+      const rentAmount = Number(selectedProperty.currentRentDisplay.replace(/[^0-9]/g, ""));
+      if (Number.isInteger(rentAmount) && rentAmount > 0) {
+        setAmount(String(rentAmount));
+      }
+    }
+  }, [type, toPlayerId, selectedProperty]);
 
   if (!open) return null;
 
@@ -134,7 +189,12 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
       fromPlayerId: fromPlayerId || undefined,
       toPlayerId: toPlayerId || undefined,
       bankPaymentReason: type === "player_to_bank" ? bankPaymentReason : undefined,
-      propertyId: type === "player_to_bank" && bankPaymentReason === "property" ? propertyId : undefined,
+      propertyId:
+        type === "player_to_player"
+          ? propertyId || undefined
+          : type === "player_to_bank" && bankPaymentReason === "property"
+            ? propertyId
+            : undefined,
       note: note.trim() || undefined
     });
 
@@ -188,6 +248,57 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
             </label>
           )}
 
+          {type === "player_to_player" && toPlayerId && (
+            <div className="stack">
+              <p className="muted tiny">Select Rent Property (optional)</p>
+              {rentTargetProperties.length === 0 ? (
+                <p className="muted tiny">This player has no owned properties.</p>
+              ) : (
+                <div className="rent-property-picker">
+                  {rentPropertyGroups.map((group) => (
+                    <div key={group.group} className="rent-property-group">
+                      {group.properties.map((property) => {
+                        const selected = propertyId === property.id;
+                        const propertyColor = colorByGroup[property.colorGroup] ?? "#94a3b8";
+                        return (
+                          <button
+                            key={property.id}
+                            type="button"
+                            className={`property-row property-row-fancy rent-property-card-button ${selected ? "selected" : ""}`}
+                            onClick={() => setPropertyId((current) => (current === property.id ? "" : property.id))}
+                            aria-pressed={selected}
+                            style={{
+                              ["--rent-property-color" as string]: propertyColor,
+                              ["--rent-property-price-color-light" as string]:
+                                property.colorGroup === "Railroad" ? "#111827" : propertyColor,
+                              ["--rent-property-price-color-dark" as string]:
+                                property.colorGroup === "Railroad" ? "#93c5fd" : propertyColor,
+                              ["--rent-property-banner-color" as string]: propertyColor,
+                              ["--rent-property-banner-color-dark" as string]:
+                                property.colorGroup === "Railroad" ? "#475569" : propertyColor
+                            }}
+                          >
+                            <span className="sr-only">{selected ? "Selected" : "Select"} {property.name}</span>
+                            <span className="property-color-bar rent-property-color-bar" aria-hidden />
+                            <div className="property-main buy-property-card-main">
+                              <div className="buy-property-card-top">
+                                <strong className="buy-property-name">{property.name}</strong>
+                              </div>
+                              <div className="property-rent-spotlight buy-property-price-box rent-property-price-box">
+                                <p className="property-rent-label">Current Rent</p>
+                                <p className="property-rent-value">{property.currentRentDisplay}</p>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {type === "player_to_bank" && (
             <label>
               Payment For
@@ -209,26 +320,49 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
 
           {type === "player_to_bank" && bankPaymentReason === "property" && (
             <div className="stack">
-              <p className="muted tiny">Property</p>
+              <p className="muted tiny">Available Properties</p>
               {availableProperties.length === 0 ? (
                 <p className="muted tiny">No unowned properties available.</p>
               ) : (
-                <div className="property-checkbox-list">
-                  {availableProperties.map((property) => (
-                    <label key={property.id} className="property-checkbox-item">
-                      <input
-                        type="radio"
-                        name="transaction-property"
-                        checked={propertyId === property.id}
-                        onChange={() => setPropertyId(property.id)}
-                      />
-                      <span
-                        className="property-swatch"
-                        style={{ backgroundColor: colorByGroup[property.colorGroup] ?? "#94a3b8" }}
-                        aria-hidden
-                      />
-                      <span>{property.name} ({`$${property.purchasePrice}`})</span>
-                    </label>
+                <div className="buy-property-picker">
+                  {availablePropertyGroups.map((group) => (
+                    <div key={group.group} className="buy-property-group">
+                      {group.properties.map((property) => (
+                        <button
+                          key={property.id}
+                          type="button"
+                          className={`property-row property-row-fancy buy-property-card-button ${propertyId === property.id ? "selected" : ""}`}
+                          onClick={() => setPropertyId((current) => (current === property.id ? "" : property.id))}
+                          aria-pressed={propertyId === property.id}
+                          style={{
+                            ["--buy-property-color" as string]: colorByGroup[property.colorGroup] ?? "#94a3b8",
+                            ["--buy-property-price-color-light" as string]:
+                              property.colorGroup === "Railroad" ? "#111827" : colorByGroup[property.colorGroup] ?? "#2563eb",
+                            ["--buy-property-price-color-dark" as string]:
+                              property.colorGroup === "Railroad" ? "#93c5fd" : colorByGroup[property.colorGroup] ?? "#60a5fa"
+                          }}
+                        >
+                          <span className="sr-only">{propertyId === property.id ? "Selected" : "Select"} {property.name}</span>
+                          <span
+                            className="property-color-bar"
+                            style={{ backgroundColor: colorByGroup[property.colorGroup] ?? "#94a3b8" }}
+                            aria-hidden
+                          />
+                          <div className="property-main buy-property-card-main">
+                            <div className="buy-property-card-top">
+                              <strong className="buy-property-name">{property.name}</strong>
+                            </div>
+                            <div className="property-meta buy-property-meta">
+                              <span className="muted tiny">Current rent: {property.currentRentDisplay}</span>
+                            </div>
+                            <div className="property-rent-spotlight buy-property-price-box">
+                              <p className="property-rent-label">Buy Price</p>
+                              <p className="property-rent-value">${property.purchasePrice}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   ))}
                 </div>
               )}
@@ -247,6 +381,8 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
               placeholder={
                 type === "player_to_bank" && bankPaymentReason === "property"
                   ? "Change to auction amount if applicable"
+                  : type === "player_to_player"
+                    ? "Auto-filled from selected property rent"
                   : "Whole dollars"
               }
               required
