@@ -89,8 +89,7 @@ export default function PlayerDetailPage() {
 
   return (
     <section className="stack">
-      <div className="card stack player-profile-card player-color-shell">
-        <span className="player-color-bar" style={{ backgroundColor: player.color }} aria-hidden />
+      <div className="card stack player-profile-card">
         <div className="player-profile-top">
           <div className="player-head">
             <span className="player-token" aria-hidden>{displayAvatar}</span>

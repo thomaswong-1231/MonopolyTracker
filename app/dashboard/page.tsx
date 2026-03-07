@@ -53,7 +53,7 @@ export default function DashboardPage() {
           );
           return (
             <article
-              className="card player-card clickable-card"
+              className="card player-card player-color-shell clickable-card"
               key={player.id}
               onClick={() => router.push(`/players/${player.id}`)}
               role="button"
@@ -65,6 +65,7 @@ export default function DashboardPage() {
                 }
               }}
             >
+              <span className="player-color-bar" style={{ backgroundColor: player.color }} aria-hidden />
               <div className="player-card-content">
                 <div className="player-token-box" aria-hidden>
                   <span className="player-token player-token-large">{displayAvatar}</span>
