@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { COLOR_GROUP_COLORS } from "@/lib/monopolyData";
+import { COLOR_GROUP_COLORS, PLAYER_TOKEN_OPTIONS } from "@/lib/monopolyData";
 import { BankPaymentReason, Player, TransactionType } from "@/lib/types";
 
 interface PropertyOption {
@@ -59,6 +59,20 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
   const rentTargetProperties = useMemo(
     () => properties.filter((property) => property.ownerId === toPlayerId),
     [properties, toPlayerId]
+  );
+  const ownedPropertiesByPlayer = useMemo(() => {
+    const grouped = new Map<string, PropertyOption[]>();
+    properties.forEach((property) => {
+      if (!property.ownerId) return;
+      const existing = grouped.get(property.ownerId) ?? [];
+      existing.push(property);
+      grouped.set(property.ownerId, existing);
+    });
+    return grouped;
+  }, [properties]);
+  const rentTargetPlayers = useMemo(
+    () => players.filter((player) => player.id !== fromPlayerId),
+    [players, fromPlayerId]
   );
   const availablePropertyGroups = useMemo(() => {
     const colorGroupDisplayOrder = [
@@ -143,6 +157,15 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
     if (!selectedProperty) return;
     setAmount(String(selectedProperty.purchasePrice));
   }, [type, bankPaymentReason, selectedProperty?.id]);
+
+  useEffect(() => {
+    if (type !== "player_to_player") return;
+    if (!toPlayerId) return;
+    if (toPlayerId === fromPlayerId) {
+      setToPlayerId("");
+      setPropertyId("");
+    }
+  }, [type, fromPlayerId, toPlayerId]);
 
   useEffect(() => {
     if (type !== "player_to_player") return;
@@ -235,17 +258,75 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
           )}
 
           {(type === "bank_to_player" || type === "player_to_player") && (
-            <label>
-              To Player
-              <select value={toPlayerId} onChange={(event) => setToPlayerId(event.target.value)}>
-                <option value="">Select player</option>
-                {players.map((player) => (
-                  <option key={player.id} value={player.id}>
-                    {player.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            type === "bank_to_player" ? (
+              <label>
+                To Player
+                <select value={toPlayerId} onChange={(event) => setToPlayerId(event.target.value)}>
+                  <option value="">Select player</option>
+                  {players.map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <div className="stack">
+                <p className="muted tiny">To Player</p>
+                {rentTargetPlayers.length === 0 ? (
+                  <p className="muted tiny">No other players available to receive rent.</p>
+                ) : (
+                  <div className="rent-player-picker">
+                    {rentTargetPlayers.map((player, index) => {
+                      const isSelected = player.id === toPlayerId;
+                      const ownedProperties = ownedPropertiesByPlayer.get(player.id) ?? [];
+                      const displayAvatar = PLAYER_TOKEN_OPTIONS.includes(player.avatar)
+                        ? player.avatar
+                        : PLAYER_TOKEN_OPTIONS[index % PLAYER_TOKEN_OPTIONS.length];
+                      return (
+                        <button
+                          key={player.id}
+                          type="button"
+                          className={`card rent-player-card-button ${isSelected ? "selected" : ""}`}
+                          onClick={() => {
+                            setToPlayerId((current) => (current === player.id ? "" : player.id));
+                            setPropertyId("");
+                          }}
+                          aria-pressed={isSelected}
+                        >
+                          <div className="rent-player-card-head">
+                            <span className="player-token player-token-large rent-player-token" aria-hidden>{displayAvatar}</span>
+                            <div className="rent-player-card-summary">
+                              <strong>{player.name}</strong>
+                              <p className="muted tiny">Available properties: {ownedProperties.length}</p>
+                            </div>
+                          </div>
+                          {ownedProperties.length === 0 ? (
+                            <p className="muted tiny">No owned properties</p>
+                          ) : (
+                            <ul className="rent-player-property-list">
+                              {ownedProperties.slice(0, 5).map((property) => (
+                                <li key={property.id}>
+                                  <span
+                                    className="property-color-dot"
+                                    style={{ backgroundColor: colorByGroup[property.colorGroup] ?? "#9ca3af" }}
+                                    aria-hidden
+                                  />
+                                  <span>{property.name}</span>
+                                </li>
+                              ))}
+                              {ownedProperties.length > 5 && (
+                                <li className="muted tiny">+{ownedProperties.length - 5} more</li>
+                              )}
+                            </ul>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )
           )}
 
           {type === "player_to_player" && toPlayerId && (
