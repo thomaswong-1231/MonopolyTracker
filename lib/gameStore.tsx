@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { MONOPOLY_PROPERTIES, PLAYER_TOKEN_OPTIONS } from "@/lib/monopolyData";
 import {
   getHotelPurchaseEligibility,
@@ -269,36 +270,38 @@ export function GameProvider({ children }: { children: ReactNode }) {
     options?: { pushUndo?: boolean; toast?: string }
   ) => {
     let changed = false;
-    setStore((current) => {
-      const index = findSessionIndex(current, current.activeSessionId);
-      if (index < 0) return current;
+    flushSync(() => {
+      setStore((current) => {
+        const index = findSessionIndex(current, current.activeSessionId);
+        if (index < 0) return current;
 
-      const existing = current.sessions[index];
-      const before = clone(existing);
-      const updated = clone(existing);
+        const existing = current.sessions[index];
+        const before = clone(existing);
+        const updated = clone(existing);
 
-      if (!mutator(updated)) {
-        return current;
-      }
+        if (!mutator(updated)) {
+          return current;
+        }
 
-      changed = true;
-      const sessions = [...current.sessions];
-      sessions[index] = updated;
+        changed = true;
+        const sessions = [...current.sessions];
+        sessions[index] = updated;
 
-      let undoStacks = current.undoStacks;
-      if (options?.pushUndo) {
-        const nextUndoStack = [before, ...(current.undoStacks[updated.id] ?? [])].slice(0, MAX_UNDO_SNAPSHOTS);
-        undoStacks = {
-          ...current.undoStacks,
-          [updated.id]: nextUndoStack
+        let undoStacks = current.undoStacks;
+        if (options?.pushUndo) {
+          const nextUndoStack = [before, ...(current.undoStacks[updated.id] ?? [])].slice(0, MAX_UNDO_SNAPSHOTS);
+          undoStacks = {
+            ...current.undoStacks,
+            [updated.id]: nextUndoStack
+          };
+        }
+
+        return {
+          ...current,
+          sessions,
+          undoStacks
         };
-      }
-
-      return {
-        ...current,
-        sessions,
-        undoStacks
-      };
+      });
     });
 
     if (changed && options?.toast) {
@@ -319,8 +322,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const updateGameDetails = (name: string, startingCash: number) => {
     updateCurrentSession(
       (currentSession) => {
+        const startingCashChanged = currentSession.startingCash !== startingCash;
         currentSession.name = name;
         currentSession.startingCash = startingCash;
+
+        if (startingCashChanged && !currentSession.started) {
+          currentSession.players.forEach((player) => {
+            player.cash = startingCash;
+          });
+          pushHistory(currentSession, {
+            eventType: "cash",
+            description: `Updated all player cash to new starting amount $${startingCash}`
+          });
+        }
+
         pushHistory(currentSession, { eventType: "game", description: "Updated game settings" });
         return true;
       },
