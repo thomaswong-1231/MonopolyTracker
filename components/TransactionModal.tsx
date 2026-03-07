@@ -287,39 +287,43 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
                         <button
                           key={player.id}
                           type="button"
-                          className={`card rent-player-card-button ${isSelected ? "selected" : ""}`}
+                          className={`card player-card rent-player-card-button ${isSelected ? "selected" : ""}`}
                           onClick={() => {
                             setToPlayerId((current) => (current === player.id ? "" : player.id));
                             setPropertyId("");
                           }}
                           aria-pressed={isSelected}
+                          style={{ ["--rent-player-color" as string]: player.color }}
                         >
-                          <div className="rent-player-card-head">
-                            <span className="player-token player-token-large rent-player-token" aria-hidden>{displayAvatar}</span>
-                            <div className="rent-player-card-summary">
-                              <strong>{player.name}</strong>
-                              <p className="muted tiny">Available properties: {ownedProperties.length}</p>
+                          <span className="player-color-bar rent-player-top-bar" style={{ backgroundColor: player.color }} aria-hidden />
+                          <div className="player-card-content rent-player-card-content">
+                            <div className="player-token-box" aria-hidden>
+                              <span className="player-token player-token-large rent-player-token">{displayAvatar}</span>
                             </div>
+                            <div className="rent-player-card-summary">
+                              <p className="player-index-label">{player.name}</p>
+                              <p className="muted tiny player-properties-label">Properties</p>
+                            </div>
+                            {ownedProperties.length === 0 ? (
+                              <p className="muted tiny player-properties-inline">Properties: None</p>
+                            ) : (
+                              <ul className="player-properties-list rent-player-property-list">
+                                {ownedProperties.slice(0, 5).map((property) => (
+                                  <li key={property.id}>
+                                    <span
+                                      className="property-color-dot"
+                                      style={{ backgroundColor: colorByGroup[property.colorGroup] ?? "#9ca3af" }}
+                                      aria-hidden
+                                    />
+                                    <span>{property.name}</span>
+                                  </li>
+                                ))}
+                                {ownedProperties.length > 5 && (
+                                  <li className="muted tiny">+{ownedProperties.length - 5} more</li>
+                                )}
+                              </ul>
+                            )}
                           </div>
-                          {ownedProperties.length === 0 ? (
-                            <p className="muted tiny">No owned properties</p>
-                          ) : (
-                            <ul className="rent-player-property-list">
-                              {ownedProperties.slice(0, 5).map((property) => (
-                                <li key={property.id}>
-                                  <span
-                                    className="property-color-dot"
-                                    style={{ backgroundColor: colorByGroup[property.colorGroup] ?? "#9ca3af" }}
-                                    aria-hidden
-                                  />
-                                  <span>{property.name}</span>
-                                </li>
-                              ))}
-                              {ownedProperties.length > 5 && (
-                                <li className="muted tiny">+{ownedProperties.length - 5} more</li>
-                              )}
-                            </ul>
-                          )}
                         </button>
                       );
                     })}

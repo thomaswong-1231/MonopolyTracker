@@ -1123,16 +1123,18 @@ textarea {
 
 .rent-player-picker {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
 .rent-player-card-button {
+  position: relative;
+  overflow: hidden;
   text-align: left;
   border: 1px solid var(--surface-border);
   background: var(--surface);
   color: var(--text-main);
-  padding: 12px;
+  padding: 20px 16px 16px;
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
@@ -1143,45 +1145,35 @@ textarea {
 }
 
 .rent-player-card-button.selected {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #2563eb 28%, transparent), 0 12px 22px #1d4ed824;
+  border-color: var(--rent-player-color, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rent-player-color, #2563eb) 28%, transparent), 0 12px 22px #1d4ed824;
 }
 
-.rent-player-card-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+.rent-player-top-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  width: 100%;
+  height: 12px;
+  border-radius: 14px 14px 0 0;
+}
+
+.rent-player-card-content {
+  gap: 12px;
 }
 
 .rent-player-token {
-  font-size: 2.2rem;
-  width: 1.2em;
+  font-size: 4rem;
+  width: auto;
 }
 
 .rent-player-card-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.rent-player-card-summary strong {
-  line-height: 1.1;
+  margin-top: 4px;
 }
 
 .rent-player-property-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 4px;
-}
-
-.rent-player-property-list li {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.88rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  gap: 2px;
 }
 
 .trade-property-picker {
@@ -1828,8 +1820,8 @@ html.theme-dark .rent-property-card-button.selected {
 }
 
 html.theme-dark .rent-player-card-button.selected {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #60a5fa 45%, transparent), 0 12px 22px #0ea5e933;
+  border-color: var(--rent-player-color, #60a5fa);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rent-player-color, #60a5fa) 45%, transparent), 0 12px 22px #0ea5e933;
 }
 
 html.theme-dark .buy-property-card-button.selected {
