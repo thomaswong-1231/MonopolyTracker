@@ -53,7 +53,7 @@ export default function DashboardPage() {
           );
           return (
             <article
-              className="card player-card player-color-shell clickable-card"
+              className="card player-card clickable-card"
               key={player.id}
               onClick={() => router.push(`/players/${player.id}`)}
               role="button"
@@ -65,44 +65,50 @@ export default function DashboardPage() {
                 }
               }}
             >
-              <span className="player-color-bar" style={{ backgroundColor: player.color }} aria-hidden />
               <div className="player-card-content">
-                <div className="player-token-box" aria-hidden>
-                  <span className="player-token player-token-large">{displayAvatar}</span>
-                </div>
-                <div className="player-summary-row">
-                  <div className="player-summary-left">
-                    <p className="player-index-label">{player.name}</p>
-                    {ownedProperties.length === 0 ? (
-                      <p className="muted tiny player-properties-inline">Properties: None</p>
-                    ) : (
-                      <div className="player-properties-block">
-                        <p className="muted tiny player-properties-label">Properties</p>
-                        <ul className="player-properties-list">
-                          {ownedProperties.map((property) => (
-                            <li key={property.id}>
-                              <span
-                                className="property-color-dot"
-                                style={{ backgroundColor: COLOR_GROUP_COLORS[property.colorGroup] ?? "#9ca3af" }}
-                                aria-hidden
-                              />
-                              <span>{property.name}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                  <div className="player-money-box">
-                    <p className={`cash dashboard-cash ${player.cash < 0 ? "negative" : ""}`}>Cash: {money(player.cash)}</p>
-                    <p className="player-net-worth">Net worth: {money(netWorth)}</p>
+                <div className="player-card-header" style={{ backgroundColor: player.color }}>
+                  <div className="player-card-header-main">
+                    <p className="player-card-label">Player {index + 1}:</p>
+                    <p className="player-card-name">{player.name}</p>
                   </div>
                 </div>
-                <div className="button-row">
-                  <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "player_to_bank", fromPlayerId: player.id, bankPaymentReason: "property" }); setOpen(true); }}>Buy Property</button>
-                  <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "player_to_bank", fromPlayerId: player.id, bankPaymentReason: "tax" }); setOpen(true); }}>Pay Bank</button>
-                  <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "bank_to_player", toPlayerId: player.id }); setOpen(true); }}>Get Money from Bank</button>
-                  <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "player_to_player", fromPlayerId: player.id }); setOpen(true); }}>Pay Rent</button>
+                <div className="player-card-body">
+                  <div className="player-token-box" aria-hidden>
+                    <span className="player-token player-token-large">{displayAvatar}</span>
+                  </div>
+                  <div className="player-summary-row">
+                    <div className="player-summary-left">
+                      <p className="player-section-title">Properties</p>
+                      {ownedProperties.length === 0 ? (
+                        <p className="muted tiny player-properties-inline">None</p>
+                      ) : (
+                        <div className="player-properties-block">
+                          <ul className="player-properties-list">
+                            {ownedProperties.map((property) => (
+                              <li key={property.id}>
+                                <span
+                                  className="property-color-dot"
+                                  style={{ backgroundColor: COLOR_GROUP_COLORS[property.colorGroup] ?? "#9ca3af" }}
+                                  aria-hidden
+                                />
+                                <span>{property.name}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <div className="player-money-box">
+                      <p className={`cash dashboard-cash ${player.cash < 0 ? "negative" : ""}`}>Cash: {money(player.cash)}</p>
+                      <p className="player-net-worth">Net worth: {money(netWorth)}</p>
+                    </div>
+                  </div>
+                  <div className="button-row">
+                    <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "player_to_bank", fromPlayerId: player.id, bankPaymentReason: "property" }); setOpen(true); }}>Buy Property</button>
+                    <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "player_to_bank", fromPlayerId: player.id, bankPaymentReason: "tax" }); setOpen(true); }}>Pay Bank</button>
+                    <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "bank_to_player", toPlayerId: player.id }); setOpen(true); }}>Get Money from Bank</button>
+                    <button className="button button-muted" onClick={(event) => { event.stopPropagation(); setPreset({ type: "player_to_player", fromPlayerId: player.id }); setOpen(true); }}>Pay Rent</button>
+                  </div>
                 </div>
               </div>
             </article>
