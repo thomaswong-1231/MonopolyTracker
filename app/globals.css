@@ -637,11 +637,7 @@ textarea {
 .dashboard-player-list .player-card {
   position: relative;
   padding: 0;
-  background-color: var(--page-bg);
-  background-image: url('/player-card-background.png'), url('/background.png');
-  background-position: center top, center top;
-  background-size: cover, cover;
-  background-repeat: no-repeat, no-repeat;
+  background: #ffffff;
   transition: box-shadow 160ms ease, transform 160ms ease;
 }
 
