@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Josefin_Sans, Jost } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/lib/gameStore";
 import { AppShell } from "@/components/AppShell";
@@ -8,6 +9,18 @@ import { getSiteUrl } from "@/lib/site";
 const siteUrl = getSiteUrl();
 const siteTitle = "Monopoly Game Tracker";
 const siteDescription = "Track Monopoly players, cash, properties, rents, mortgages, and game history in one place.";
+
+const josefin = Josefin_Sans({
+  subsets: ["latin"],
+  variable: "--font-josefin",
+  display: "swap",
+});
+
+const jost = Jost({
+  subsets: ["latin"],
+  variable: "--font-jost",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -65,7 +78,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${josefin.variable} ${jost.variable}`}>
       <body>
         <GameProvider>
           <AppShell>{children}</AppShell>

@@ -127,7 +127,10 @@ export function PropertyTransferModal({ open, onClose, players, properties, init
   return (
     <div className="modal-backdrop" role="presentation" onClick={handleClose}>
       <div className="modal" role="dialog" aria-modal="true" aria-label="Trade Time" onClick={(event) => event.stopPropagation()}>
-        <h2>Trade Time</h2>
+        <div className="modal-header">
+          <button type="button" className="modal-close-button" onClick={handleClose} aria-label="Close">✕</button>
+          <h2>Trade Time</h2>
+        </div>
         <form className="form-stack" onSubmit={onSubmit}>
           <label>
             From Player

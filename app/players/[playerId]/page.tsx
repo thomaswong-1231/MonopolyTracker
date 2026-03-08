@@ -153,10 +153,19 @@ export default function PlayerDetailPage() {
             const canAffordHouse = (owner?.cash ?? 0) >= (property.rent.houseCost ?? 0);
             const canAffordHotel = (owner?.cash ?? 0) >= (property.rent.houseCost ?? 0);
             const canAffordUnmortgage = (owner?.cash ?? 0) >= calculateUnmortgageValue(property.mortgageValue);
-            const hasFullSet =
-              property.type === "street" && propertyState?.ownerId
-                ? ownsFullStreetSet(session, propertyState.ownerId, property.colorGroup)
-                : false;
+            const hasFullSet = (() => {
+              if (!propertyState?.ownerId) return false;
+              if (property.type === "street") {
+                return ownsFullStreetSet(session, propertyState.ownerId, property.colorGroup);
+              }
+              // Check if the player owns all properties in this non-street group (Railroad or Utility)
+              const groupProperties = MONOPOLY_PROPERTIES.filter(
+                (p) => p.colorGroup === property.colorGroup
+              );
+              return groupProperties.every(
+                (p) => session.properties[p.id]?.ownerId === propertyState.ownerId
+              );
+            })();
             const buildingUnits = getBuildingUnits(propertyState?.houses ?? 0, propertyState?.hotel ?? false);
             return (
               <div

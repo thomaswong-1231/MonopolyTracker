@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { COLOR_GROUP_COLORS, PLAYER_TOKEN_OPTIONS } from "@/lib/monopolyData";
 import { BankPaymentReason, Player, TransactionType } from "@/lib/types";
 
@@ -232,7 +232,10 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
   return (
     <div className="modal-backdrop" role="presentation" onClick={handleClose}>
       <div className="modal" role="dialog" aria-modal="true" aria-label="Record transaction" onClick={(event) => event.stopPropagation()}>
-        <h2>Record Cash Transaction</h2>
+        <div className="modal-header">
+          <button type="button" className="modal-close-button" onClick={handleClose} aria-label="Close">✕</button>
+          <h2>Record Cash Transaction</h2>
+        </div>
         <form className="form-stack" onSubmit={onSubmit}>
           <label>
             Type
@@ -417,7 +420,16 @@ export function TransactionModal({ open, onClose, players, properties, onSave, i
                           key={property.id}
                           type="button"
                           className={`property-row property-row-fancy buy-property-card-button ${propertyId === property.id ? "selected" : ""}`}
-                          onClick={() => setPropertyId((current) => (current === property.id ? "" : property.id))}
+                          onClick={() => {
+                            const isDeselecting = propertyId === property.id;
+                            setPropertyId((current) => (current === property.id ? "" : property.id));
+                            if (!isDeselecting && availableProperties.length > 6) {
+                              setTimeout(() => {
+                                const saveRow = document.querySelector(".modal .button-row:last-child");
+                                saveRow?.scrollIntoView({ behavior: "smooth", block: "end" });
+                              }, 50);
+                            }
+                          }}
                           aria-pressed={propertyId === property.id}
                           style={{
                             ["--buy-property-color" as string]: colorByGroup[property.colorGroup] ?? "#94a3b8",
